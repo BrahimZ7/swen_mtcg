@@ -14,20 +14,19 @@ public class Arena {
             Card card1 = player1.getFirstCard();
             Card card2 = player2.getFirstCard();
 
-            int result = card1.compareTo(card2);
-
             System.out.println(String.format("%s uses %s", player1.getUsername(), card1.toString()));
             System.out.println(String.format("%s uses %s", player2.getUsername(), card2.toString()));
 
+            int result = card1.compareTo(card2);
 
             switch (result) {
-                case -1:
+                case 1:
                     player1Score++;
                     System.out.println(player1.getUsername() + " won this Battle");
                     player1.addCardToDeck(card1);
                     player1.addCardToDeck(card2);
                     break;
-                case 1:
+                case -1:
                     player2Score++;
                     System.out.println(player2.getUsername() + " won this Battle");
                     player2.addCardToDeck(card1);
