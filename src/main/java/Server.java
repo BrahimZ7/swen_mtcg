@@ -13,9 +13,7 @@ import java.util.concurrent.Executors;
 public class Server {
     final PackageStore packageStore = new PackageStore();
     final UserHandler userHandler = new UserHandler();
-
-
-    private List<Thread> clientThreads = new ArrayList<Thread>();
+    
     final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public void startListening() throws IOException {

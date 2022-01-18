@@ -77,22 +77,31 @@ public class ClientHandler implements Runnable {
                 handleUserRoute(httpRequest);
                 break;
             case "sessions":
+                handleSessionRoute(httpRequest);
                 break;
             case "packages":
+                handlePackagesRoute(httpRequest);
                 break;
             case "transactions":
+                handleTransactionsRoute(httpRequest);
                 break;
             case "cards":
+                handleCardsRoute(httpRequest);
                 break;
             case "deck":
+                handleDeckRoute(httpRequest);
                 break;
             case "stats":
+                handleStatsRoute(httpRequest);
                 break;
             case "score":
+                handleScoreRoute(httpRequest);
                 break;
             case "battles":
+                handleBattlesRoute(httpRequest);
                 break;
             case "tradings":
+                handleTradingsRoute(httpRequest);
                 break;
             default:
                 System.out.println("We are here");
@@ -163,7 +172,38 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void handleSessionRoute(HTTPModel httpRequest) {
+    private void handleSessionRoute(HTTPModel httpRequest) throws IOException {
+
+        if (httpRequest.getRequestMethod().equals("POST")) {
+            Map<String, String> userData = mapper.readValue(httpRequest.getBody(), Map.class);
+
+            if (userHandler.checkIfUsernameExists(userData.get("Username"))) {
+                System.out.println("We are here");
+                String result = userHandler.loginUser(userData.get("Username"), userData.get("Password"));
+
+                System.out.println(result);
+
+                if (result == null)
+                    sendResponse("401", mapper.writeValueAsString(Map.of(
+                            "value", "Password is incorrect"
+                    )));
+                else
+                    sendResponse("200", mapper.writeValueAsString(Map.of(
+                            "authorizationToken", "Basic " + result
+                    )));
+            } else {
+                sendResponse("404", mapper.writeValueAsString(Map.of(
+                        "value", "There is no User with this username"
+                )));
+            }
+        } else {
+            sendResponse("404", mapper.writeValueAsString(Map.of(
+                    "value", "Route not found"
+            )));
+        }
+    }
+
+    private void handleTransactionsRoute(HTTPModel httpRequest) {
     }
 
     private void handlePackagesRoute(HTTPModel httpRequest) {

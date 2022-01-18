@@ -29,6 +29,7 @@ public class User {
         this.username = username;
         this.cardList = new ArrayList<Card>();
         this.deck = new ArrayList<Card>();
+        this.passwordHash = "";
         this.score = "";
         this.authorizationToken = "";
         this.bio = "";
