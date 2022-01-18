@@ -2,8 +2,7 @@ package handler;
 
 import model.User;
 
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 
 public class UserHandler {
     final ArrayList<User> userList = new ArrayList<>();
@@ -12,6 +11,11 @@ public class UserHandler {
         User user = new User(userData.get("Username"));
         user.setAuthorizationToken(user.getUsername() + "-mtcgToken");
         user.setPasswordHash(userData.get("Password"));
+
+        if (userList.size() == 0)
+            user.setId("1");
+        else
+            user.setId(Integer.toString(Integer.parseInt(userList.get(userList.size() - 1).getId()) + 1));
 
         //TODO save the UserModel in the SQL Database and save the newly added ID
 
@@ -25,6 +29,10 @@ public class UserHandler {
         return userList.get(index);
     }
 
+    public User getUserByID(String id) {
+        return userList.stream().filter(e -> e.getId().equals(id)).findFirst().orElse(null);
+    }
+
     public void updateUser(Map<String, String> userData, String authorizationToken) {
         int index = getIndexOfUser(authorizationToken);
 
@@ -36,6 +44,14 @@ public class UserHandler {
             userList.get(index).setBio(userData.get("Bio"));
         if (userData.get("Image") != null && !userData.get("Image").isEmpty())
             userList.get(index).setImage(userData.get("Image"));
+    }
+
+    public void updateUser(User user) {
+        int index = getIndexOfUser(user.getAuthorizationToken());
+
+        //TODO update the User in the SQL Database
+
+        userList.set(index, user);
     }
 
     public boolean checkIfUsernameExists(String username) {
@@ -73,5 +89,20 @@ public class UserHandler {
             return user.getAuthorizationToken();
 
         return null;
+    }
+
+    public String getScoreboard() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        List<User> sortedList = new ArrayList<User>();
+        sortedList.addAll(userList);
+
+        Collections.sort(sortedList, Comparator.comparing(User::getWon));
+
+        for (int i = 0; i < sortedList.size(); i++) {
+            stringBuilder.append(i + ": " + sortedList.get(i).getUsername() + " " + sortedList.get(i).getWon() + ", " + sortedList.get(i).getLost() + ", " + sortedList.get(i).getDraw() + "\n");
+        }
+
+        return stringBuilder.toString();
     }
 }

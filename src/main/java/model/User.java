@@ -19,18 +19,23 @@ public class User {
     private String image;
     private List<Card> deck;
     private List<Card> cardList;
-    private String score;
+    private int battleCount;
+    private int won;
+    private int lost;
+    private int draw;
     private String authorizationToken;
     private int coins;
 
     public User(String username) {
-        this.id = "12";
         this.coins = 20;
         this.username = username;
         this.cardList = new ArrayList<Card>();
         this.deck = new ArrayList<Card>();
         this.passwordHash = "";
-        this.score = "";
+        this.battleCount = 0;
+        this.won = 0;
+        this.lost = 0;
+        this.draw = 0;
         this.authorizationToken = "";
         this.bio = "";
         this.image = "";
@@ -41,10 +46,35 @@ public class User {
         cardList.addAll(cardPackage);
     }
 
-    public void setDeck(List<String> cards) {
-        for (String cardID : cards) {
-            deck.add(cardList.stream().filter(card -> card.getId().equals(cardID)).findFirst().get());
+    public void resetDeck() {
+        for (Card card : deck) {
+            cardList.add(card);
         }
+
+        deck.clear();
+    }
+
+    public void setDeck(String[] cards) {
+        for (String cardID : cards) {
+            int index = getIndexOfCardList(cardID);
+            deck.add(cardList.remove(index));
+        }
+    }
+
+    public void removeCardFromList(String cardID) {
+        int index = getIndexOfCardList(cardID);
+        cardList.remove(index);
+    }
+
+    public void addCardToList(Card card) {
+        cardList.add(card);
+    }
+
+    private int getIndexOfCardList(String cardID) {
+        for (int i = 0; i < cardList.size(); i++) {
+            if (cardList.get(i).getId().equals(cardID)) return i;
+        }
+        return -1;
     }
 
     public Card getFirstCard() {
@@ -60,6 +90,10 @@ public class User {
                 "username", username,
                 "bio", bio,
                 "image", image,
+                "battleCount", Integer.toString(battleCount),
+                "won", Integer.toString(won),
+                "lost", Integer.toString(lost),
+                "draw", Integer.toString(draw),
                 "authorizationToken", authorizationToken
         ));
     }

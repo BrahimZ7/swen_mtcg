@@ -26,7 +26,7 @@ public abstract class Card implements Comparable {
 
     @Override
     public String toString() {
-        return "Name: " + name + ", Damage: " + damage;
+        return "ID: " + id + "; Name: " + name + "; Damage: " + damage;
     }
 
     @Override
