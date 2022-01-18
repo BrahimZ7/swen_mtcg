@@ -4,6 +4,7 @@ import model.Card;
 import model.MonsterCard;
 import model.SpellCard;
 import model.User;
+import service.DatabaseService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,10 +14,11 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        Server server = new Server();
+        DatabaseService dbService = new DatabaseService();
+
         try {
-            server.startListening();
-        } catch (IOException e) {
+            dbService.connectToDatabase();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

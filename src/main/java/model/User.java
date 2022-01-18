@@ -61,6 +61,10 @@ public class User {
         }
     }
 
+    public void setCardDeck(List<Card> deck) {
+        this.deck = deck;
+    }
+
     public void removeCardFromList(String cardID) {
         int index = getIndexOfCardList(cardID);
         cardList.remove(index);
