@@ -1,3 +1,5 @@
+package handler;
+
 import model.Card;
 
 import java.util.ArrayList;
@@ -7,7 +9,7 @@ public class PackageStore {
 
     private List<List<Card>> cardPackages;
 
-    PackageStore() {
+    public PackageStore() {
         this.cardPackages = new ArrayList<List<Card>>();
     }
 
