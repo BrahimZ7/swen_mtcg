@@ -36,11 +36,7 @@ public class User {
         this.image = "";
     }
 
-    public void addCardPackage(List<Card> cardPackage) throws Exception {
-        if (coins < 5) {
-            throw new Exception();
-        }
-
+    public void addCardPackage(List<Card> cardPackage) {
         coins -= 5;
         cardList.addAll(cardPackage);
     }

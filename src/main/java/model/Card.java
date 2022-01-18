@@ -10,7 +10,7 @@ public abstract class Card implements Comparable {
     @Getter
     private final String name;
 
-    Card(String id, float damage, String name) {
+    Card(String id, String name, float damage) {
         this.id = id;
         this.damage = damage;
         this.name = name;

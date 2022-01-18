@@ -2,14 +2,11 @@ package handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import model.HTTPModel;
-import model.User;
+import model.*;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class ClientHandler implements Runnable {
     private final UserHandler userHandler;
@@ -203,10 +200,90 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void handleTransactionsRoute(HTTPModel httpRequest) {
+    private void handleTransactionsRoute(HTTPModel httpRequest) throws IOException {
+        if (!httpRequest.getPath().equals("/transactions/packages")) {
+            sendResponse("404", mapper.writeValueAsString(Map.of(
+                    "value", "Route not found"
+            )));
+            return;
+        }
+
+
+        if (!userHandler.checkIfUserExists(httpRequest.getAuthorization())) {
+            sendResponse("401", mapper.writeValueAsString(Map.of(
+                    "value", "Authorization-Token is not valid"
+            )));
+            return;
+        }
+
+        User user = userHandler.getUser(httpRequest.getAuthorization());
+
+        if (user.getCoins() < 5) {
+            sendResponse("400", mapper.writeValueAsString(Map.of(
+                    "value", "User does not have enough coins"
+            )));
+            return;
+        }
+
+        List<Card> cardPackage = packageStore.buyPackage();
+
+        if (cardPackage == null) {
+            sendResponse("400", mapper.writeValueAsString(Map.of(
+                    "value", "There are no packages to be bought"
+            )));
+            return;
+        }
+
+        user.addCardPackage(cardPackage);
+
+        sendResponse("200", mapper.writeValueAsString(Map.of(
+                "value", "User successfully bought package"
+        )));
+
     }
 
-    private void handlePackagesRoute(HTTPModel httpRequest) {
+    private void handlePackagesRoute(HTTPModel httpRequest) throws IOException {
+
+        if (httpRequest.getRequestMethod().equals("POST")) {
+            System.out.println(httpRequest.getAuthorization());
+            if (!httpRequest.getAuthorization().equals("admin-mtcgToken")) {
+                sendResponse("400", mapper.writeValueAsString(Map.of(
+                        "value", "You are not authorized"
+                )));
+                return;
+            }
+
+            Map[] cardData = mapper.readValue(httpRequest.getBody(), Map[].class);
+
+
+            if (cardData.length != 5) {
+                sendResponse("400", mapper.writeValueAsString(Map.of(
+                        "value", "A package consists of 5 Cards"
+                )));
+            }
+
+            List<Card> cardList = new ArrayList<>();
+
+            for (Map data : cardData) {
+                if (data.get("Name").toString().toLowerCase().contains("spell")) {
+                    cardList.add(new SpellCard(data.get("Id").toString(), Float.parseFloat(data.get("Damage").toString()), data.get("Name").toString()));
+                } else {
+                    cardList.add(new MonsterCard(data.get("Id").toString(), Float.parseFloat(data.get("Damage").toString()), data.get("Name").toString()));
+                }
+            }
+
+            packageStore.createPackage(cardList);
+
+            sendResponse("200", mapper.writeValueAsString(Map.of(
+                    "value", "Package created successfully"
+            )));
+        } else {
+            sendResponse("404", mapper.writeValueAsString(Map.of(
+                    "value", "Route not found"
+            )));
+        }
+
+
     }
 
     private void handleCardsRoute(HTTPModel httpRequest) {

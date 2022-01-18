@@ -14,6 +14,8 @@ public class PackageStore {
     }
 
     public List<Card> buyPackage() throws ArrayIndexOutOfBoundsException {
+        if (cardPackages.size() == 0)
+            return null;
         return cardPackages.remove(0);
     }
 
