@@ -409,17 +409,24 @@ public class DatabaseService {
     }
 
     public void deletePackage(List<Card> cardPackage) {
-        for (Card card : cardPackage) {
-            try {
+        try {
+            System.out.println(cardPackage.size());
+            System.out.println("We want to delete some cards");
+            for (Card card : cardPackage) {
+
                 PreparedStatement statement = connection.prepareStatement("DELETE FROM PACKAGES WHERE cardID=?");
                 statement.setString(1, card.getId());
                 statement.execute();
+
+
                 PreparedStatement deleteCard = connection.prepareStatement("DELETE FROM CARD WHERE id=?");
                 deleteCard.setString(1, card.getId());
                 deleteCard.execute();
-            } catch (SQLException e) {
-                e.printStackTrace();
+
+
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

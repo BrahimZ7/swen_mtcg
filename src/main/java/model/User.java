@@ -65,7 +65,7 @@ public class User {
     public void setDeck(String[] cards) {
         for (String cardID : cards) {
             int index = getIndexOfCardList(cardID);
-            System.out.println(index);
+            if (index == -1) return;
             deck.add(cardList.remove(index));
         }
     }

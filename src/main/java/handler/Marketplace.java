@@ -33,11 +33,13 @@ public class Marketplace {
     }
 
     public List<Card> buyPackage() throws ArrayIndexOutOfBoundsException {
+        System.out.println(cardPackages.size());
+
         if (cardPackages.size() == 0)
             return null;
         List<Card> cardPackage = cardPackages.remove(0);
-        if (databaseService != null)
-            databaseService.deletePackage(cardPackage);
+        System.out.println("We remove the Package");
+
         return cardPackage;
     }
 

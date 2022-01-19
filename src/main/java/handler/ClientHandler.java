@@ -219,14 +219,27 @@ public class ClientHandler implements Runnable {
             return;
         }
 
+        System.out.println("We want to buy some packages");
+
         List<Card> cardPackage = marketplace.buyPackage();
+
+        System.out.println("We bought the packages");
 
         if (cardPackage == null) {
             sendResponse("400", mapper.writeValueAsString(Map.of("value", "There are no packages to be bought")));
             return;
         }
 
-        user.addCardPackage(cardPackage);
+        System.out.println("We are starting to add the CardPackage");
+
+        boolean result = user.addCardPackage(cardPackage);
+
+        if (!result) {
+            sendResponse("400", mapper.writeValueAsString(Map.of("value", "User does not have enough coins")));
+            return;
+        }
+
+        System.out.println("We added the cardPackage");
 
         sendResponse("200", mapper.writeValueAsString(Map.of("value", "User successfully bought package")));
 
