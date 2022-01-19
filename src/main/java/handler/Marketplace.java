@@ -3,31 +3,49 @@ package handler;
 import lombok.Getter;
 import model.Card;
 import model.Trade;
+import service.DatabaseService;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Marketplace {
+    private final DatabaseService databaseService;
     private List<List<Card>> cardPackages;
     @Getter
     private List<Trade> activeTrades = new ArrayList<Trade>();
 
-    public Marketplace() {
+    public Marketplace(DatabaseService databaseService) {
         this.cardPackages = new ArrayList<List<Card>>();
+        this.databaseService = databaseService;
+    }
+
+    public void init() {
+        List<Trade> activeTrades = databaseService.getTrades();
+
+        this.activeTrades.addAll(activeTrades);
+
+        List<List<Card>> packages = databaseService.getCardPackages();
+
+        this.cardPackages.addAll(packages);
     }
 
     public List<Card> buyPackage() throws ArrayIndexOutOfBoundsException {
         if (cardPackages.size() == 0)
             return null;
-        return cardPackages.remove(0);
+        List<Card> cardPackage = cardPackages.remove(0);
+        databaseService.deletePackage(cardPackage);
+        return cardPackage;
     }
 
     public void createPackage(List<Card> cardPackage) {
         cardPackages.add(cardPackage);
+        databaseService.savePackage(cardPackage, cardPackages.size() - 1);
     }
 
     public void addTrade(Trade trade) {
         activeTrades.add(trade);
+        databaseService.saveTrade(trade);
     }
 
     public Trade getTrade(String tradeID) {
@@ -42,6 +60,8 @@ public class Marketplace {
         int index = getIndexOfTrade(tradeID);
 
         activeTrades.remove(index);
+
+        databaseService.deleteTrade(tradeID);
     }
 
     private int getIndexOfTrade(String tradeID) {

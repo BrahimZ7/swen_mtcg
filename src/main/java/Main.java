@@ -7,6 +7,7 @@ import model.User;
 import service.DatabaseService;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,11 +15,15 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        DatabaseService dbService = new DatabaseService();
-
         try {
-            dbService.connectToDatabase();
-        } catch (Exception e) {
+            DatabaseService databaseService = new DatabaseService();
+            databaseService.connectToDatabase();
+
+            Server server = new Server(databaseService);
+            server.startListening();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch(SQLException e){
             e.printStackTrace();
         }
     }

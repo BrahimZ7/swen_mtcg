@@ -6,6 +6,7 @@ public abstract class Card implements Comparable {
     @Getter
     private final String id;
     private ElementType elementType;
+    @Getter
     private final float damage;
     @Getter
     private final String name;

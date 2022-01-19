@@ -3,8 +3,7 @@ package service;
 import model.*;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DatabaseService {
 
@@ -13,18 +12,20 @@ public class DatabaseService {
     public void connectToDatabase() throws SQLException {
         connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/mctg", "newuser", "password");
 
-        createUserTable();
+
         createCardTable();
         createTradeTable();
         createDeckTable();
         createCardListTable();
+        createUserTable();
+        createPackageTable();
     }
 
     public List<User> getUsers() {
         List<User> users = new ArrayList<>();
 
         try {
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM USER");
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS");
 
             ResultSet rs = statement.executeQuery();
 
@@ -38,6 +39,8 @@ public class DatabaseService {
                 user.setWon(rs.getInt("won"));
                 user.setBattleCount(rs.getInt("battleCount"));
                 user.setCoins(rs.getInt("coins"));
+                List<Card> cardList = getCardListOfUser(user.getId());
+                System.out.println("This is the length of the cards of the User " + cardList.size());
                 user.setCardDeck(getDeckOfUser(user.getId()));
                 user.setCardList(getCardListOfUser(user.getId()));
                 users.add(user);
@@ -53,7 +56,7 @@ public class DatabaseService {
         List<Trade> trades = new ArrayList<Trade>();
 
         try {
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM TABLE");
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM TRADE");
 
             ResultSet rs = statement.executeQuery();
 
@@ -106,6 +109,7 @@ public class DatabaseService {
             statement.setString(1, userID);
             ResultSet rs = statement.executeQuery();
 
+
             while (rs.next()) {
                 if (rs.getString("name").contains("Spell")) {
                     cardList.add(new SpellCard(rs.getString("id"), rs.getFloat("damage"), rs.getString("name")));
@@ -120,21 +124,56 @@ public class DatabaseService {
         }
     }
 
+    public List<List<Card>> getCardPackages() {
+        Map<Integer, List<Card>> cardPackage = new HashMap<>();
+        List<List<Card>> cardPackages = new ArrayList();
+
+        try {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM PACKAGES JOIN CARD ON PACKAGES.cardID = CARD.id");
+
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                int index = rs.getInt("index");
+
+                if (cardPackage.get(index) == null) {
+                    cardPackage.put(index, new ArrayList());
+                }
+
+                if (rs.getString("name").contains("Spell")) {
+                    cardPackage.get(index).add(new SpellCard(rs.getString("id"), rs.getFloat("damage"), rs.getString("name")));
+                } else {
+                    cardPackage.get(index).add(new MonsterCard(rs.getString("id"), rs.getFloat("damage"), rs.getString("name")));
+                }
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        int count = cardPackage.size();
+        for (int i = 0; i < count; i++) {
+            cardPackages.add(cardPackage.get(i));
+        }
+
+        return cardPackages;
+    }
+
     private void createUserTable() {
         try {
-            String sqlCreate = "CREATE TABLE IF NOT EXISTS USER"
-                    + "  (id                 VARCHAR(10) PRIMARY KEY,"
-                    + "   username           VARCHAR(100),"
-                    + "   passwordHash       VARCHAR(10000),"
-                    + "   bio                VARCHAR(10000),"
-                    + "   image              VARCHAR(300),"
-                    + "   battleCount        INTEGER,"
-                    + "   won                INTEGER,"
-                    + "   lost               INTEGER,"
-                    + "   draw               INTEGER,"
-                    + "   coins              INTEGER,"
-                    + "   authorizationToken VARCHAR(300))";
-
+            String sqlCreate = "CREATE TABLE IF NOT EXISTS USERS ("
+                    + " id VARCHAR(1000) PRIMARY KEY,"
+                    + " username VARCHAR(1000),"
+                    + " passwordHash VARCHAR(10000),"
+                    + " bio VARCHAR(10000),"
+                    + " image VARCHAR(300),"
+                    + " battleCount INTEGER,"
+                    + " won INTEGER,"
+                    + " lost INTEGER,"
+                    + " draw INTEGER,"
+                    + " coins INTEGER,"
+                    + " authorizationToken VARCHAR(300))";
             connection.createStatement().execute(sqlCreate);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -144,11 +183,11 @@ public class DatabaseService {
     private void createTradeTable() {
         try {
             String sqlCreate = "CREATE TABLE IF NOT EXISTS TRADE"
-                    + "  (id                 VARCHAR(10) PRIMARY KEY,"
-                    + "   cardToTrade        VARCHAR(10),"
-                    + "   type               VARCHAR(10),"
+                    + "  (id                 VARCHAR(1000) PRIMARY KEY,"
+                    + "   cardToTrade        VARCHAR(1000),"
+                    + "   type               VARCHAR(1000),"
                     + "   minimumDamage      FLOAT(24),"
-                    + "   userID             VARCHAR(10))";
+                    + "   userID             VARCHAR(1000))";
 
             connection.createStatement().execute(sqlCreate);
         } catch (SQLException e) {
@@ -159,9 +198,9 @@ public class DatabaseService {
     private void createCardTable() {
         try {
             String sqlCreate = "CREATE TABLE IF NOT EXISTS CARD"
-                    + "  (id                 VARCHAR(10) PRIMARY KEY,"
+                    + "  (id                 VARCHAR(1000) PRIMARY KEY,"
                     + "   damage             FLOAT(24),"
-                    + "   name               FLOAT(24))";
+                    + "   name               VARCHAR(1000))";
 
             connection.createStatement().execute(sqlCreate);
         } catch (SQLException e) {
@@ -172,8 +211,8 @@ public class DatabaseService {
     private void createDeckTable() {
         try {
             String sqlCreate = "CREATE TABLE IF NOT EXISTS DECK"
-                    + "  (cardID             VARCHAR(10),"
-                    + "   userID             VARCHAR(10))";
+                    + "  (cardID             VARCHAR(1000),"
+                    + "   userID             VARCHAR(1000))";
 
             connection.createStatement().execute(sqlCreate);
         } catch (SQLException e) {
@@ -184,8 +223,20 @@ public class DatabaseService {
     private void createCardListTable() {
         try {
             String sqlCreate = "CREATE TABLE IF NOT EXISTS CARDLIST"
-                    + "  (cardID             VARCHAR(10),"
-                    + "   userID             VARCHAR(10))";
+                    + "  (cardID             VARCHAR(1000),"
+                    + "   userID             VARCHAR(1000))";
+
+            connection.createStatement().execute(sqlCreate);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createPackageTable() {
+        try {
+            String sqlCreate = "CREATE TABLE IF NOT EXISTS PACKAGES"
+                    + "  (index             INTEGER,"
+                    + "   cardID             VARCHAR(1000))";
 
             connection.createStatement().execute(sqlCreate);
         } catch (SQLException e) {
@@ -196,7 +247,7 @@ public class DatabaseService {
     public void saveUser(User user) {
         try {
             PreparedStatement statement = connection.prepareStatement("""
-                    INSERT INTO USER
+                    INSERT INTO USERS
                     (id, username, passwordHash, bio, image, battleCount, won, lost, draw, coins, authorizationToken)
                     VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?)    """);
 
@@ -213,6 +264,9 @@ public class DatabaseService {
             statement.setString(11, user.getAuthorizationToken());
 
             statement.execute();
+
+            saveCardList(user.getCardList(), user.getId());
+            saveDeck(user.getDeck(), user.getId());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -230,6 +284,8 @@ public class DatabaseService {
                 statement.setString(2, userID);
 
                 statement.execute();
+
+                saveCard(card);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -242,12 +298,54 @@ public class DatabaseService {
                 PreparedStatement statement = connection.prepareStatement("""
                         INSERT INTO CARDLIST
                         (cardID, userID)
-                        VALUES(?,?) """);
+                        VALUES(?,?) 
+                        ON CONFLICT DO NOTHING""");
 
                 statement.setString(1, card.getId());
                 statement.setString(2, userID);
 
                 statement.execute();
+
+                saveCard(card);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void saveCard(Card card) {
+        try {
+            PreparedStatement statement = connection.prepareStatement("""
+                    INSERT INTO CARD
+                    (id, damage, name)
+                    VALUES(?,?,?)
+                    ON CONFLICT DO NOTHING""");
+
+            statement.setString(1, card.getId());
+            statement.setFloat(2, card.getDamage());
+            statement.setString(3, card.getName().toString());
+
+            statement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void savePackage(List<Card> cardPackage, int index) {
+        for (Card card : cardPackage) {
+            try {
+                PreparedStatement statement = connection.prepareStatement("""
+                        INSERT INTO PACKAGES
+                        (index, cardID)
+                        VALUES(?,?) """);
+
+
+                statement.setInt(1, index);
+                statement.setString(2, card.getId());
+
+                statement.execute();
+
+                saveCardList(cardPackage, "");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -257,16 +355,17 @@ public class DatabaseService {
     public void updateUser(User user) {
         try {
             PreparedStatement statement = connection.prepareStatement("""
-                    UPDATE USER SET
-                    usnerame=?, bio=?, image=?, battleCount=?, won=?, lost=?, draw=? WHERE id=?
+                    UPDATE USERS SET
+                    username=?, bio=?, image=?, battleCount=?, won=?, lost=?, draw=? WHERE id=?
                     """);
             statement.setString(1, user.getUsername());
             statement.setString(2, user.getBio());
             statement.setString(3, user.getImage());
             statement.setInt(4, user.getBattleCount());
-            statement.setInt(6, user.getWon());
-            statement.setInt(7, user.getLost());
-            statement.setInt(8, user.getDraw());
+            statement.setInt(5, user.getWon());
+            statement.setInt(6, user.getLost());
+            statement.setInt(7, user.getDraw());
+            statement.setString(8, user.getId());
 
             statement.execute();
         } catch (SQLException e) {
@@ -295,13 +394,28 @@ public class DatabaseService {
 
     public void deleteTrade(String tradeID) {
         try {
-            PreparedStatement statement = connection.prepareStatement("DELETE FROM TABLE WHERE id=?");
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM TRADE WHERE id=?");
 
             statement.setString(1, tradeID);
 
             statement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void deletePackage(List<Card> cardPackage) {
+        for (Card card : cardPackage) {
+            try {
+                PreparedStatement statement = connection.prepareStatement("DELETE FROM PACKAGES WHERE cardID=?");
+                statement.setString(1, card.getId());
+                statement.execute();
+                PreparedStatement deleteCard = connection.prepareStatement("DELETE FROM CARD WHERE id=?");
+                deleteCard.setString(1, card.getId());
+                deleteCard.execute();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

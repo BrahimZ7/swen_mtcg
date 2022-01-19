@@ -1,11 +1,23 @@
 package handler;
 
 import model.User;
+import service.DatabaseService;
 
 import java.util.*;
 
 public class UserHandler {
-    final ArrayList<User> userList = new ArrayList<>();
+    private final DatabaseService databaseService;
+    private final ArrayList<User> userList = new ArrayList<>();
+
+    public UserHandler(DatabaseService databaseService) {
+        this.databaseService = databaseService;
+    }
+
+    public void init() {
+        List<User> userList = databaseService.getUsers();
+
+        this.userList.addAll(userList);
+    }
 
     public String addUser(Map<String, String> userData) {
         User user = new User(userData.get("Username"));
@@ -17,9 +29,9 @@ public class UserHandler {
         else
             user.setId(Integer.toString(Integer.parseInt(userList.get(userList.size() - 1).getId()) + 1));
 
-        //TODO save the UserModel in the SQL Database and save the newly added ID
-
         userList.add(user);
+
+        databaseService.saveUser(user);
 
         return "Added successfully";
     }
@@ -36,7 +48,6 @@ public class UserHandler {
     public void updateUser(Map<String, String> userData, String authorizationToken) {
         int index = getIndexOfUser(authorizationToken);
 
-        //TODO update the UserModel in the SQL Database
 
         if (userData.get("Name") != null && !userData.get("Name").isEmpty())
             userList.get(index).setUsername(userData.get("Name"));
@@ -44,14 +55,16 @@ public class UserHandler {
             userList.get(index).setBio(userData.get("Bio"));
         if (userData.get("Image") != null && !userData.get("Image").isEmpty())
             userList.get(index).setImage(userData.get("Image"));
+
+        databaseService.updateUser(userList.get(index));
     }
 
     public void updateUser(User user) {
         int index = getIndexOfUser(user.getAuthorizationToken());
 
-        //TODO update the User in the SQL Database
-
         userList.set(index, user);
+
+        databaseService.updateUser(user);
     }
 
     public boolean checkIfUsernameExists(String username) {
