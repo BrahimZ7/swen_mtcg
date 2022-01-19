@@ -12,7 +12,10 @@ public class DatabaseService {
     public void connectToDatabase() throws SQLException {
         connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/mctg", "newuser", "password");
 
+        createTables();
+    }
 
+    public void createTables() {
         createCardTable();
         createTradeTable();
         createDeckTable();
@@ -249,7 +252,8 @@ public class DatabaseService {
             PreparedStatement statement = connection.prepareStatement("""
                     INSERT INTO USERS
                     (id, username, passwordHash, bio, image, battleCount, won, lost, draw, coins, authorizationToken)
-                    VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?)    """);
+                    VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT DO NOTHING""");
 
             statement.setString(1, user.getId());
             statement.setString(2, user.getUsername());

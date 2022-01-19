@@ -5,6 +5,7 @@ import lombok.Getter;
 public abstract class Card implements Comparable {
     @Getter
     private final String id;
+    @Getter
     private ElementType elementType;
     @Getter
     private final float damage;
@@ -53,9 +54,6 @@ public abstract class Card implements Comparable {
                 cardDamage1 *= 0.5;
                 cardDamage2 *= 2;
             }
-
-        System.out.println("Card1 Damage: " + cardDamage1);
-        System.out.println("Card2 Damage: " + cardDamage2);
 
         return Float.compare(cardDamage1, cardDamage2);
     }

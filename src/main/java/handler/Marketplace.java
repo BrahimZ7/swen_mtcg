@@ -21,31 +21,36 @@ public class Marketplace {
     }
 
     public void init() {
-        List<Trade> activeTrades = databaseService.getTrades();
+        if (databaseService != null) {
+            List<Trade> activeTrades = databaseService.getTrades();
 
-        this.activeTrades.addAll(activeTrades);
+            this.activeTrades.addAll(activeTrades);
 
-        List<List<Card>> packages = databaseService.getCardPackages();
+            List<List<Card>> packages = databaseService.getCardPackages();
 
-        this.cardPackages.addAll(packages);
+            this.cardPackages.addAll(packages);
+        }
     }
 
     public List<Card> buyPackage() throws ArrayIndexOutOfBoundsException {
         if (cardPackages.size() == 0)
             return null;
         List<Card> cardPackage = cardPackages.remove(0);
-        databaseService.deletePackage(cardPackage);
+        if (databaseService != null)
+            databaseService.deletePackage(cardPackage);
         return cardPackage;
     }
 
     public void createPackage(List<Card> cardPackage) {
         cardPackages.add(cardPackage);
-        databaseService.savePackage(cardPackage, cardPackages.size() - 1);
+        if (databaseService != null)
+            databaseService.savePackage(cardPackage, cardPackages.size() - 1);
     }
 
     public void addTrade(Trade trade) {
         activeTrades.add(trade);
-        databaseService.saveTrade(trade);
+        if (databaseService != null)
+            databaseService.saveTrade(trade);
     }
 
     public Trade getTrade(String tradeID) {
@@ -56,12 +61,18 @@ public class Marketplace {
             return activeTrades.get(index);
     }
 
-    public void deleteTrade(String tradeID) {
+    public boolean deleteTrade(String tradeID) {
         int index = getIndexOfTrade(tradeID);
+
+        if (index == -1)
+            return false;
 
         activeTrades.remove(index);
 
-        databaseService.deleteTrade(tradeID);
+        if (databaseService != null)
+            databaseService.deleteTrade(tradeID);
+
+        return true;
     }
 
     private int getIndexOfTrade(String tradeID) {

@@ -41,9 +41,14 @@ public class User {
         this.image = "";
     }
 
-    public void addCardPackage(List<Card> cardPackage) {
-        coins -= 5;
-        cardList.addAll(cardPackage);
+    public boolean addCardPackage(List<Card> cardPackage) {
+        if (coins < 5) {
+            return false;
+        } else {
+            coins -= 5;
+            cardList.addAll(cardPackage);
+            return true;
+        }
     }
 
     public void resetDeck() {
@@ -57,6 +62,7 @@ public class User {
     public void setDeck(String[] cards) {
         for (String cardID : cards) {
             int index = getIndexOfCardList(cardID);
+            System.out.println(index);
             deck.add(cardList.remove(index));
         }
     }

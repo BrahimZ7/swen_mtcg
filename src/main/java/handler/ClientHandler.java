@@ -59,6 +59,9 @@ public class ClientHandler implements Runnable {
                 }
             }
 
+            System.out.println(header.toString());
+            System.out.println(body.toString());
+
             HTTPModel httpModel = new HTTPModel(header.toString(), body.toString());
 
             handleRequest(httpModel);
@@ -356,7 +359,7 @@ public class ClientHandler implements Runnable {
         if (checkAuthToken(httpRequest)) {
             User userModel = userHandler.getUser(httpRequest.getAuthorization());
 
-            sendResponse("200", "Username: " + userModel.getUsername() + "; WLD:" + userModel.getWon() + "," + userModel.getLost() + "," + userModel.getDraw());
+            sendResponse("200", "Username: " + userModel.getUsername() + "; WLO:" + userModel.getWon() + "," + userModel.getLost() + "," + userModel.getDraw());
         }
     }
 

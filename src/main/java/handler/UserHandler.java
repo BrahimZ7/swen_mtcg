@@ -14,15 +14,21 @@ public class UserHandler {
     }
 
     public void init() {
-        List<User> userList = databaseService.getUsers();
+        if (databaseService != null) {
+            List<User> userList = databaseService.getUsers();
 
-        this.userList.addAll(userList);
+            this.userList.addAll(userList);
+        }
     }
 
-    public String addUser(Map<String, String> userData) {
+    public boolean addUser(Map<String, String> userData) {
         User user = new User(userData.get("Username"));
         user.setAuthorizationToken(user.getUsername() + "-mtcgToken");
         user.setPasswordHash(userData.get("Password"));
+
+        if (checkIfUsernameExists(user.getUsername())) {
+            return false;
+        }
 
         if (userList.size() == 0)
             user.setId("1");
@@ -30,10 +36,10 @@ public class UserHandler {
             user.setId(Integer.toString(Integer.parseInt(userList.get(userList.size() - 1).getId()) + 1));
 
         userList.add(user);
+        if (databaseService != null)
+            databaseService.saveUser(user);
 
-        databaseService.saveUser(user);
-
-        return "Added successfully";
+        return true;
     }
 
     public User getUser(String authorizationToken) throws ArrayIndexOutOfBoundsException {
@@ -55,8 +61,8 @@ public class UserHandler {
             userList.get(index).setBio(userData.get("Bio"));
         if (userData.get("Image") != null && !userData.get("Image").isEmpty())
             userList.get(index).setImage(userData.get("Image"));
-
-        databaseService.updateUser(userList.get(index));
+        if (databaseService != null)
+            databaseService.updateUser(userList.get(index));
     }
 
     public void updateUser(User user) {
@@ -64,7 +70,8 @@ public class UserHandler {
 
         userList.set(index, user);
 
-        databaseService.updateUser(user);
+        if (databaseService != null)
+            databaseService.updateUser(user);
     }
 
     public boolean checkIfUsernameExists(String username) {
