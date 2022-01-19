@@ -3,6 +3,9 @@ package handler;
 import model.User;
 import service.DatabaseService;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class UserHandler {
@@ -24,7 +27,7 @@ public class UserHandler {
     public boolean addUser(Map<String, String> userData) {
         User user = new User(userData.get("Username"));
         user.setAuthorizationToken(user.getUsername() + "-mtcgToken");
-        user.setPasswordHash(userData.get("Password"));
+        user.setPasswordHash(hashPassword(userData.get("Password")));
 
         if (checkIfUsernameExists(user.getUsername())) {
             return false;
@@ -101,11 +104,11 @@ public class UserHandler {
 
         System.out.println(index);
 
-        //TODO check the password hashes and not the normal passwords
-
         User user = userList.get(index);
 
-        if (user.getPasswordHash().equals(password))
+        String passwordHash = hashPassword(password);
+
+        if (user.getPasswordHash().equals(passwordHash))
             return user.getAuthorizationToken();
 
         return null;
@@ -124,5 +127,30 @@ public class UserHandler {
         }
 
         return stringBuilder.toString();
+    }
+
+    private String hashPassword(final String password) {
+        try {
+            String hashtext = null;
+
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            // Compute message digest of the input
+            byte[] messageDigest = md.digest(password.getBytes());
+
+            hashtext = convertToHex(messageDigest);
+
+            return hashtext;
+        } catch (NoSuchAlgorithmException e) {
+            return password;
+        }
+    }
+
+    private String convertToHex(final byte[] messageDigest) {
+        BigInteger bigint = new BigInteger(1, messageDigest);
+        String hexText = bigint.toString(16);
+        while (hexText.length() < 32) {
+            hexText = "0".concat(hexText);
+        }
+        return hexText;
     }
 }
